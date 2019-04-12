@@ -19,7 +19,8 @@ SCOTLAND_DATA = pd.read_csv(
 STANDARD_LAYOUT = go.Layout(
     xaxis={'title': 'Year', 'range': [1973, 2019], 'fixedrange': True},
     yaxis={'title': 'Number of births', 'rangemode': 'nonnegative', 'fixedrange': True},
-    legend={'orientation': 'h', 'xanchor': 'center', 'x': 0.5, 'y': -0.3}
+    legend={'orientation': 'h', 'xanchor': 'center', 'x': 0.5, 'y': -0.3},
+    showlegend=True
 )
 
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
@@ -39,10 +40,7 @@ app.layout = html.Div(children=[
                  for n in sorted(SCOTLAND_DATA['Name'].unique())],
         value='Adam', multi=False
     ),
-    dcc.Loading(
-        id='graph-loading', type='graph',
-        children=[dcc.Graph(id='baby-name-graph')]
-    ),
+    dcc.Graph(id='single-name-graph', config={'displaylogo': False}),
     html.H2('Compare Name Totals'),
     dcc.Dropdown(
         id='multiple-name-chooser',
@@ -50,14 +48,11 @@ app.layout = html.Div(children=[
                  for n in sorted(SCOTLAND_DATA['Name'].unique())],
         value=['Adam'], multi=True
     ),
-    dcc.Loading(
-        id='comparison-graph-loading', type='graph',
-        children=[dcc.Graph(id='comparison-name-graph')]
-    )
+    dcc.Graph(id='comparison-graph', config={'displaylogo': False}),
 ])
 
 
-@app.callback(Output('baby-name-graph', 'figure'),
+@app.callback(Output('single-name-graph', 'figure'),
               [Input('single-name-chooser', 'value')])
 def one_baby_name(chosen_name):
     baby_data = SCOTLAND_DATA[SCOTLAND_DATA['Name'].eq(chosen_name)]
@@ -83,9 +78,9 @@ def one_baby_name(chosen_name):
     }
 
 
-@app.callback(Output('comparison-name-graph', 'figure'),
+@app.callback(Output('comparison-graph', 'figure'),
               [Input('multiple-name-chooser', 'value')])
-def one_baby_name(chosen_names):
+def multiple_names(chosen_names):
     traces = []
     if not chosen_names:
         return dict()
@@ -98,6 +93,7 @@ def one_baby_name(chosen_names):
                 x=baby_data['Year'],
                 y=baby_data['Total'],
                 name=name,
+                mode='lines'
             )
         )
 
