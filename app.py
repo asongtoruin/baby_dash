@@ -17,8 +17,8 @@ SCOTLAND_DATA = pd.read_csv(
 )
 
 STANDARD_LAYOUT = go.Layout(
-    xaxis={'title': 'Year', 'range': [1973, 2019]},
-    yaxis={'title': 'Number of births', 'rangemode': 'nonnegative'},
+    xaxis={'title': 'Year', 'range': [1973, 2019], 'fixedrange': True},
+    yaxis={'title': 'Number of births', 'rangemode': 'nonnegative', 'fixedrange': True},
     legend={'orientation': 'h', 'xanchor': 'center', 'x': 0.5, 'y': -0.3}
 )
 
@@ -48,7 +48,7 @@ app.layout = html.Div(children=[
         id='multiple-name-chooser',
         options=[{'label': n, 'value': n}
                  for n in sorted(SCOTLAND_DATA['Name'].unique())],
-        value='Adam', multi=True
+        value=['Adam'], multi=True
     ),
     dcc.Loading(
         id='comparison-graph-loading', type='graph',
@@ -62,23 +62,20 @@ app.layout = html.Div(children=[
 def one_baby_name(chosen_name):
     baby_data = SCOTLAND_DATA[SCOTLAND_DATA['Name'].eq(chosen_name)]
 
-    traces = []
-    traces.append(
+    traces = [
         go.Scatter(
             x=baby_data['Year'],
             y=baby_data['Assigned Male'],
             name='Assigned Male',
             mode='markers'
-        )
-    )
-    traces.append(
+        ),
         go.Scatter(
             x=baby_data['Year'],
             y=baby_data['Assigned Female'],
             name='Assigned Female',
             mode='markers'
         )
-    )
+    ]
 
     return {
         'data': traces,
@@ -92,10 +89,6 @@ def one_baby_name(chosen_names):
     traces = []
     if not chosen_names:
         return dict()
-
-    # Select case where only one name is chosen
-    if isinstance(chosen_names, str):
-        chosen_names = [chosen_names]
 
     for name in chosen_names:
         baby_data = SCOTLAND_DATA[SCOTLAND_DATA['Name'].eq(name)]
@@ -112,6 +105,7 @@ def one_baby_name(chosen_names):
         'data': traces,
         'layout': STANDARD_LAYOUT
     }
+
 
 if __name__ == '__main__':
     app.run_server(debug=True)
