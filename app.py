@@ -12,8 +12,8 @@ import plotly.graph_objs as go
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
 SCOTLAND_DATA = pd.read_csv(
-    'https://raw.githubusercontent.com/asongtoruin/baby_dash/master'
-    '/Filtered%20Names%20Scotland.csv'
+    'https://raw.githubusercontent.com/asongtoruin/dash_data/master'
+    '/Baby%20Names/Filtered%20Names%20Scotland.csv'
 )
 
 STANDARD_LAYOUT = go.Layout(
