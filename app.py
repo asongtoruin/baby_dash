@@ -9,48 +9,92 @@ import pandas as pd
 import plotly.graph_objs as go
 
 
-external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
+external_stylesheets = [
+    'https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css',
+    'https://use.fontawesome.com/releases/v5.8.1/css/brands.css',
+    'https://use.fontawesome.com/releases/v5.8.1/css/fontawesome.css'
+    # 'https://codepen.io/chriddyp/pen/bWLwgP.css'
+]
 
 SCOTLAND_DATA = pd.read_csv(
     'https://raw.githubusercontent.com/asongtoruin/dash_data/master'
     '/Baby%20Names/Filtered%20Names%20Scotland.csv'
 )
 
+DATA_SOURCE = 'https://www.nrscotland.gov.uk/statistics-and-data/statistics' \
+              '/statistics-by-theme/vital-events/names/babies-first-names'
+
+PROJECT_LINK = 'https://github.com/asongtoruin/baby_dash'
+
 STANDARD_LAYOUT = go.Layout(
-    xaxis={'title': 'Year', 'range': [1973, 2019], 'fixedrange': True},
-    yaxis={'title': 'Number of births', 'rangemode': 'nonnegative', 'fixedrange': True},
-    legend={'orientation': 'h', 'xanchor': 'center', 'x': 0.5, 'y': -0.3},
+    xaxis={'range': [1973, 2019], 'fixedrange': True},
+    yaxis={
+        'title': 'Number of births',
+        'rangemode': 'nonnegative',
+        'fixedrange': True,
+        'automargin': True
+    },
+    legend={'orientation': 'h', 'xanchor': 'center', 'x': 0.5, 'y': -0.05},
+    margin={'l': 50, 'r': 0, 't': 30},
     showlegend=True
 )
 
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 app.title = 'Scottish Baby Names'
 server = app.server
+# app.css.append_css('/assets/spacing.css')
+
 
 app.layout = html.Div(children=[
-    html.H1('Scottish Baby Names', style={'textAlign': 'center'}),
-    html.Div(
-        'Select a name to view the number of babies given this name in '
-        'Scotland between 1974 and 2018 (only names appearing more than 10 '
-        'times in that period are shown)'),
-    html.H2('One Name by Gender'),
-    dcc.Dropdown(
-        id='single-name-chooser',
-        options=[{'label': n, 'value': n}
-                 for n in sorted(SCOTLAND_DATA['Name'].unique())],
-        value='Adam', multi=False
+    html.Nav(
+        [
+            html.Div('Scottish Baby Names', className='navbar-brand'),
+            html.Div(
+                html.A(
+                    html.I(className='fab fa-github fa-lg'), href=PROJECT_LINK,
+                    target='blank',
+                    className='nav-link nav-item'
+                ), className='nav-item navbar-nav'
+            ),
+            html.Div(
+                html.A(
+                    'Data Source', href=DATA_SOURCE, target='blank',
+                    className='nav-link'
+                ), className='nav-item navbar-nav'
+            )
+        ],
+        className='navbar navbar-dark fixed-top bg-dark mr auto'
     ),
-    dcc.Graph(id='single-name-graph', config={'displaylogo': False}),
-    html.H2('Compare Name Totals'),
-    dcc.Dropdown(
-        id='multiple-name-chooser',
-        options=[{'label': n, 'value': n}
-                 for n in sorted(SCOTLAND_DATA['Name'].unique())],
-        value=['Adam'], multi=True
-    ),
-    dcc.Graph(id='comparison-graph', config={'displaylogo': False}),
+    html.Div([
+        html.Div(
+            'View information on the number of babies born by name in '
+            'Scotland between 1974 and 2018 (only names appearing more than 10 '
+            'times in that period are shown)'),
+        html.H3('One Name by Gender'),
+        html.Div(
+            'Use this graph to view usage of a name by gender.'
+        ),
+        dcc.Dropdown(
+            id='single-name-chooser',
+            options=[{'label': n, 'value': n}
+                     for n in sorted(SCOTLAND_DATA['Name'].unique())],
+            value='Adam', multi=False
+        ),
+        dcc.Graph(id='single-name-graph', config={'displaylogo': False}),
+        html.H2('Compare Name Totals'),
+        html.Div(
+            'Use this graph to compare total instanes for multiple names. The '
+            'graph can show up to 10 different names with unique colours.'
+        ),
+        dcc.Dropdown(
+            id='multiple-name-chooser',
+            options=[{'label': n, 'value': n}
+                     for n in sorted(SCOTLAND_DATA['Name'].unique())],
+            value=['Adam'], multi=True
+        ),
+        dcc.Graph(id='comparison-graph', config={'displaylogo': False}),
+    ], className='container')
 ])
-
 
 @app.callback(Output('single-name-graph', 'figure'),
               [Input('single-name-chooser', 'value')])
