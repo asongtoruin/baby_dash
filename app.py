@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import dash
+import dash_bootstrap_components as dbc
 import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output
@@ -10,10 +11,9 @@ import plotly.graph_objs as go
 
 
 external_stylesheets = [
-    'https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css',
     'https://use.fontawesome.com/releases/v5.8.1/css/brands.css',
-    'https://use.fontawesome.com/releases/v5.8.1/css/fontawesome.css'
-    # 'https://codepen.io/chriddyp/pen/bWLwgP.css'
+    'https://use.fontawesome.com/releases/v5.8.1/css/fontawesome.css',
+    dbc.themes.LITERA
 ]
 
 SCOTLAND_DATA = pd.read_csv(
@@ -44,57 +44,61 @@ app.title = 'Scottish Baby Names'
 server = app.server
 # app.css.append_css('/assets/spacing.css')
 
-
-app.layout = html.Div(children=[
-    html.Nav(
-        [
-            html.Div('Scottish Baby Names', className='navbar-brand'),
-            html.Div(
-                html.A(
-                    html.I(className='fab fa-github fa-lg'), href=PROJECT_LINK,
-                    target='blank',
-                    className='nav-link nav-item'
-                ), className='nav-item navbar-nav'
-            ),
-            html.Div(
-                html.A(
-                    'Data Source', href=DATA_SOURCE, target='blank',
-                    className='nav-link'
-                ), className='nav-item navbar-nav'
+navbar = dbc.NavbarSimple(
+    children=[
+        dbc.NavItem(
+            dbc.NavLink(
+                html.I(className='fab fa-github fa-lg'),
+                href=PROJECT_LINK, external_link=True
             )
-        ],
-        className='navbar navbar-dark fixed-top bg-dark mr auto'
+        ),
+        dbc.NavItem(
+            dbc.NavLink('Data Source', href=DATA_SOURCE, external_link=True)
+        ),
+    ],
+    brand='Scottish Baby Names',
+    brand_href="#",
+    sticky="top",
+    dark=False
+)
+
+body = dbc.Container([
+    dbc.Row(dbc.Col([
+    html.H3('Overview'),
+    html.Div(
+        'View information on the number of babies born by name in '
+        'Scotland between 1974 and 2018 (only names appearing more than 10 '
+        'times in that period are shown)'
     ),
-    html.Div([
-        html.Div(
-            'View information on the number of babies born by name in '
-            'Scotland between 1974 and 2018 (only names appearing more than 10 '
-            'times in that period are shown)'),
-        html.H3('One Name by Gender'),
-        html.Div(
-            'Use this graph to view usage of a name by gender.'
-        ),
-        dcc.Dropdown(
-            id='single-name-chooser',
-            options=[{'label': n, 'value': n}
-                     for n in sorted(SCOTLAND_DATA['Name'].unique())],
-            value='Adam', multi=False
-        ),
-        dcc.Graph(id='single-name-graph', config={'displaylogo': False}),
-        html.H2('Compare Name Totals'),
-        html.Div(
-            'Use this graph to compare total instanes for multiple names. The '
-            'graph can show up to 10 different names with unique colours.'
-        ),
-        dcc.Dropdown(
-            id='multiple-name-chooser',
-            options=[{'label': n, 'value': n}
-                     for n in sorted(SCOTLAND_DATA['Name'].unique())],
-            value=['Adam'], multi=True
-        ),
-        dcc.Graph(id='comparison-graph', config={'displaylogo': False}),
-    ], className='container')
+        ])),
+    html.H3('One Name by Gender'),
+    html.Div(
+        'Use this graph to view usage of a name by gender.'
+    ),
+    dcc.Dropdown(
+        id='single-name-chooser',
+        options=[{'label': n, 'value': n}
+                 for n in sorted(SCOTLAND_DATA['Name'].unique())],
+        value='Adam', multi=False
+    ),
+    dcc.Graph(id='single-name-graph', config={'displaylogo': False})
+    ,
+    html.H3('Compare Name Totals'),
+    html.Div(
+        'Use this graph to compare total instances for multiple names. The '
+        'graph can show up to 10 different names with unique colours.'
+    ),
+    dcc.Dropdown(
+        id='multiple-name-chooser',
+        options=[{'label': n, 'value': n}
+                 for n in sorted(SCOTLAND_DATA['Name'].unique())],
+        value=['Adam'], multi=True
+    ),
+    dcc.Graph(id='comparison-graph', config={'displaylogo': False}),
 ])
+
+
+app.layout = html.Div(children=[navbar, body])
 
 @app.callback(Output('single-name-graph', 'figure'),
               [Input('single-name-chooser', 'value')])
